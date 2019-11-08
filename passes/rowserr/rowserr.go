@@ -1,4 +1,4 @@
-package bodyclose
+package rowserr
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name: "bodyclose",
+	Name: "rowserr",
 	Doc:  Doc,
 	Run:  runx,
 	Requires: []*analysis.Analyzer{

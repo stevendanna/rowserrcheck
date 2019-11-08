@@ -48,4 +48,4 @@ data from database, `rows.Next` will return false, and you will get an incomplet
 even it seems everything is ok. This will cause serious accident.
 
 ## Analyzer
-Thanks for [timakin](https://github.com/timakin/bodyclose).
+Thanks for [timakin](https://github.com/jingyugao/rowserrcheck).
