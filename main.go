@@ -3,7 +3,7 @@
 package main
 
 import (
-	"github.com/timakin/bodyclose/passes/bodyclose"
+	"github.com/jingyugao/rowserrcheck/passes/bodyclose"
 	"golang.org/x/tools/go/analysis/singlechecker"
 )
 

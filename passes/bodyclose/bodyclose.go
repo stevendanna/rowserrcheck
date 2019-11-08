@@ -16,17 +16,23 @@ import (
 var Analyzer = &analysis.Analyzer{
 	Name: "bodyclose",
 	Doc:  Doc,
-	Run:  new(runner).run,
+	Run:  runx,
 	Requires: []*analysis.Analyzer{
 		buildssa.Analyzer,
 	},
 }
 
 const (
-	Doc = "bodyclose checks whether HTTP response body is closed successfully"
+	Doc       = "rowserrcheck checks whether Rows.Err is checked"
+	errMethod = "Err"
+)
 
-	nethttpPath = "database/sql"
-	closeMethod = "Err"
+var (
+	dbsqlPath string
+	dbsqlPkgs = []string{
+		"database/sql",
+		"github.com/jmoiron/sqlx",
+	}
 )
 
 type runner struct {
@@ -38,13 +44,23 @@ type runner struct {
 	skipFile  map[*ast.File]bool
 }
 
+func runx(pass *analysis.Pass) (interface{}, error) {
+	for _, pkg := range dbsqlPkgs {
+		dbsqlPath = pkg
+		ret, err := new(runner).runSimple(pass)
+		if err != nil {
+			return ret, err
+		}
+	}
+	return nil, nil
+}
+
 // run executes an analysis for the pass. The receiver is passed
 // by value because this func is called in parallel for different passes.
-func (r runner) run(pass *analysis.Pass) (interface{}, error) {
+func (r runner) runSimple(pass *analysis.Pass) (interface{}, error) {
 	r.pass = pass
 	funcs := pass.ResultOf[buildssa.Analyzer].(*buildssa.SSA).SrcFuncs
-
-	r.resObj = analysisutil.LookupFromImports(pass.Pkg.Imports(), nethttpPath, "Rows")
+	r.resObj = analysisutil.LookupFromImports(pass.Pkg.Imports(), dbsqlPath, "Rows")
 	if r.resObj == nil {
 		// skip checking
 		return nil, nil
@@ -62,7 +78,7 @@ func (r runner) run(pass *analysis.Pass) (interface{}, error) {
 	bodyNamed := r.bodyObj.Type().(*types.Named)
 	for i := 0; i < bodyNamed.NumMethods(); i++ {
 		bmthd := bodyNamed.Method(i)
-		if bmthd.Id() == closeMethod {
+		if bmthd.Id() == errMethod {
 			r.closeMthd = bmthd
 		}
 	}
@@ -272,7 +288,7 @@ func (r *runner) noImportedNetHTTP(f *ssa.Function) (ret bool) {
 			continue
 		}
 		path = analysisutil.RemoveVendor(path)
-		if path == nethttpPath {
+		if path == dbsqlPath {
 			return false
 		}
 	}
@@ -300,7 +316,7 @@ func (r *runner) calledInFunc(f *ssa.Function, called bool) bool {
 								}
 								for _, vref := range vrefs {
 									if c, ok := vref.(*ssa.Call); ok {
-										if c.Call.Value != nil && c.Call.Value.Name() == closeMethod {
+										if c.Call.Value != nil && c.Call.Value.Name() == errMethod {
 											return !called
 										}
 									}
