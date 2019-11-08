@@ -3,7 +3,7 @@ package rowserr_test
 import (
 	"testing"
 
-	"github.com/jingyugao/rowserr/passes/rowserr"
+	"github.com/jingyugao/rowserrcheck/passes/rowserr"
 	"golang.org/x/tools/go/analysis/analysistest"
 )
 
