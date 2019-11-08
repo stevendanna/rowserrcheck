@@ -8,18 +8,26 @@ import (
 	"strings"
 
 	"github.com/gostaticanalysis/analysisutil"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/jmoiron/sqlx"
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/buildssa"
 	"golang.org/x/tools/go/ssa"
 )
 
-var Analyzer = &analysis.Analyzer{
-	Name: "rowserr",
-	Doc:  Doc,
-	Run:  runx,
-	Requires: []*analysis.Analyzer{
-		buildssa.Analyzer,
-	},
+var _ = sqlx.NameMapper
+
+func NewAnalyzer(sqlPkgs ...string) *analysis.Analyzer {
+	dbsqlPkgs = append(dbsqlPkgs, sqlPkgs...)
+
+	return &analysis.Analyzer{
+		Name: "rowserr",
+		Doc:  Doc,
+		Run:  runx,
+		Requires: []*analysis.Analyzer{
+			buildssa.Analyzer,
+		},
+	}
 }
 
 const (
@@ -31,7 +39,6 @@ var (
 	dbsqlPath string
 	dbsqlPkgs = []string{
 		"database/sql",
-		"github.com/jmoiron/sqlx",
 	}
 )
 
