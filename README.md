@@ -46,3 +46,6 @@ In the [GoDoc of sql.Rows](https://golang.org/pkg/database/sql/#Rows) this rule 
 If you forget this sentence, and unluckly an `invaliad connection` error happend when fetch
 data from database, `rows.Next` will return false, and you will get an incomplete data, and
 even it seems everything is ok. This will cause serious accident.
+
+## Analyzer
+Thanks for [timakin](https://github.com/timakin/bodyclose).
