@@ -80,7 +80,7 @@ func (r runner) run(pass *analysis.Pass, pkg string) (interface{}, error) {
 
 	r.skipFile = map[*ast.File]bool{}
 	for _, f := range funcs {
-		if r.noImportedNetHTTP(f) {
+		if r.noImportedDBSQL(f) {
 			// skip this
 			continue
 		}
@@ -140,7 +140,7 @@ func (r *runner) isopen(b *ssa.BasicBlock, i int) bool {
 				for _, aref := range *resRef.Addr.Referrers() {
 					if c, ok := aref.(*ssa.MakeClosure); ok {
 						f := c.Fn.(*ssa.Function)
-						if r.noImportedNetHTTP(f) {
+						if r.noImportedDBSQL(f) {
 							// skip this
 							return false
 						}
@@ -259,7 +259,7 @@ func (r *runner) isClosureCalled(c *ssa.MakeClosure) bool {
 	return false
 }
 
-func (r *runner) noImportedNetHTTP(f *ssa.Function) (ret bool) {
+func (r *runner) noImportedDBSQL(f *ssa.Function) (ret bool) {
 	obj := f.Object()
 	if obj == nil {
 		return false
@@ -283,7 +283,7 @@ func (r *runner) noImportedNetHTTP(f *ssa.Function) (ret bool) {
 			continue
 		}
 		path = analysisutil.RemoveVendor(path)
-		if path == r.sqlPkg {
+		if r.sqlPkg == path {
 			return false
 		}
 	}
