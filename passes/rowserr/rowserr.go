@@ -36,13 +36,15 @@ type runner struct {
 	rowsObj   types.Object
 	closeMthd *types.Func
 	skipFile  map[*ast.File]bool
-	sqlPkg    string
+	sqlPkgs   []string
 }
 
 func NewRun(pkgs ...string) func(pass *analysis.Pass) (interface{}, error) {
 	return func(pass *analysis.Pass) (interface{}, error) {
 		pkgs = append(pkgs, "database/sql")
 		for _, pkg := range pkgs {
+			r := new(runner)
+			r.sqlPkgs = pkgs
 			ret, err := new(runner).run(pass, pkg)
 			if err != nil {
 				return ret, err
@@ -55,10 +57,9 @@ func NewRun(pkgs ...string) func(pass *analysis.Pass) (interface{}, error) {
 // run executes an analysis for the pass. The receiver is passed
 // by value because this func is called in parallel for different passes.
 func (r runner) run(pass *analysis.Pass, pkg string) (interface{}, error) {
-	r.sqlPkg = pkg
 	r.pass = pass
 	funcs := pass.ResultOf[buildssa.Analyzer].(*buildssa.SSA).SrcFuncs
-	r.rowsObj = analysisutil.LookupFromImports(pass.Pkg.Imports(), r.sqlPkg, rowsName)
+	r.rowsObj = analysisutil.LookupFromImports(pass.Pkg.Imports(), pkg, rowsName)
 	if r.rowsObj == nil {
 		// skip checking
 		return nil, nil
@@ -283,9 +284,12 @@ func (r *runner) noImportedDBSQL(f *ssa.Function) (ret bool) {
 			continue
 		}
 		path = analysisutil.RemoveVendor(path)
-		if r.sqlPkg == path {
-			return false
+		for _, pkg := range r.sqlPkgs {
+			if pkg == path {
+				return false
+			}
 		}
+
 	}
 
 	return true
