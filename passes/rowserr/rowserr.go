@@ -45,7 +45,7 @@ func NewRun(pkgs ...string) func(pass *analysis.Pass) (interface{}, error) {
 		for _, pkg := range pkgs {
 			r := new(runner)
 			r.sqlPkgs = pkgs
-			ret, err := new(runner).run(pass, pkg)
+			ret, err := r.run(pass, pkg)
 			if err != nil {
 				return ret, err
 			}
