@@ -109,8 +109,7 @@ func (r runner) run(pass *analysis.Pass, pkgPath string) (interface{}, error) {
 			for i := range b.Instrs {
 				pos := b.Instrs[i].Pos()
 				if r.isopen(b, i) {
-					pass.Reportf(pos, fmt.Sprintf("%s| %s %s rows err must be checked", pkgPath, pmtPkgs, pkg.Type(rowsName)))
-					// pass.Reportf(pos, fmt.Sprintf("rows err must be checked"))
+					pass.Reportf(pos, fmt.Sprintf("rows err must be checked"))
 				}
 			}
 		}
