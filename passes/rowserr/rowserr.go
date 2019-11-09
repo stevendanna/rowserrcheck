@@ -45,10 +45,7 @@ func NewRun(pkgs ...string) func(pass *analysis.Pass) (interface{}, error) {
 		for _, pkg := range pkgs {
 			r := new(runner)
 			r.sqlPkgs = pkgs
-			ret, err := r.run(pass, pkg)
-			if err != nil {
-				return ret, err
-			}
+			r.run(pass, pkg)
 		}
 		return nil, nil
 	}
@@ -56,10 +53,21 @@ func NewRun(pkgs ...string) func(pass *analysis.Pass) (interface{}, error) {
 
 // run executes an analysis for the pass. The receiver is passed
 // by value because this func is called in parallel for different passes.
-func (r runner) run(pass *analysis.Pass, pkg string) (interface{}, error) {
+func (r runner) run(pass *analysis.Pass, pkgPath string) (interface{}, error) {
 	r.pass = pass
-	funcs := pass.ResultOf[buildssa.Analyzer].(*buildssa.SSA).SrcFuncs
-	r.rowsObj = analysisutil.LookupFromImports(pass.Pkg.Imports(), pkg, rowsName)
+	ssa := pass.ResultOf[buildssa.Analyzer].(*buildssa.SSA)
+	funcs := ssa.SrcFuncs
+	pkg := ssa.Pkg.Prog.ImportedPackage(pkgPath)
+	if pkg == nil {
+		return nil, nil
+	}
+
+	r.rowsObj = pkg.Type(rowsName).Object()
+	// r.rowsObj = analysisutil.LookupFromImports(pass.Pkg.Imports(), pkgPath, rowsName)
+	pmtPkgs := ""
+	for _, p := range pass.Pkg.Imports() {
+		pmtPkgs += "," + p.String()
+	}
 	if r.rowsObj == nil {
 		// skip checking
 		return nil, nil
@@ -101,7 +109,8 @@ func (r runner) run(pass *analysis.Pass, pkg string) (interface{}, error) {
 			for i := range b.Instrs {
 				pos := b.Instrs[i].Pos()
 				if r.isopen(b, i) {
-					pass.Reportf(pos, fmt.Sprintf("rows err must be checked"))
+					pass.Reportf(pos, fmt.Sprintf("%s| %s %s rows err must be checked", pkgPath, pmtPkgs, pkg.Type(rowsName)))
+					// pass.Reportf(pos, fmt.Sprintf("rows err must be checked"))
 				}
 			}
 		}
@@ -261,6 +270,7 @@ func (r *runner) isClosureCalled(c *ssa.MakeClosure) bool {
 }
 
 func (r *runner) noImportedDBSQL(f *ssa.Function) (ret bool) {
+	return false
 	obj := f.Object()
 	if obj == nil {
 		return false
