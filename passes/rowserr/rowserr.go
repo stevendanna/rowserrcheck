@@ -67,7 +67,7 @@ func (r runner) run(pass *analysis.Pass, pkg string) (interface{}, error) {
 
 	resNamed, ok := r.rowsObj.Type().(*types.Named)
 	if !ok {
-		return nil, fmt.Errorf("cannot find sql.Rows")
+		return nil, nil
 	}
 	r.rowsTyp = types.NewPointer(resNamed)
 
