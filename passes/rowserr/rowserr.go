@@ -234,11 +234,14 @@ func (r *runner) getBodyOp(instr ssa.Instruction) (*ssa.UnOp, bool) {
 func (r *runner) isCloseCall(ccall ssa.Instruction) bool {
 	switch ccall := ccall.(type) {
 	case *ssa.Defer:
+		panic(ccall.Call.Value.Name())
 		if ccall.Call.Value != nil && ccall.Call.Value.Name() == errMethod {
 			return true
 		}
 	case *ssa.Call:
+		panic(ccall.Call.Value.Name())
 		if ccall.Call.Value != nil && ccall.Call.Value.Name() == errMethod {
+			r.pass.Reportf(ccall.Pos(), ccall.Call.Value.Name())
 			return true
 		}
 

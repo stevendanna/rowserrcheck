@@ -7,10 +7,14 @@ import (
 
 func RowsErrCheck() {
 	rows, _ := db.Query("")
+	defer func() {
+		rows.Close()
+	}()
+
 	for rows.Next() {
 
 	}
-	_ = rows.Err() // OK
+	// _ = rows.Err() // OK
 }
 
 func f2() {
