@@ -115,11 +115,7 @@ func (r *runner) notCheck(b *ssa.BasicBlock, i int) bool {
 		return false
 	}
 
-	if len(*call.Referrers()) == 0 {
-		return true
-	}
-	cRefs := *call.Referrers()
-	for _, cRef := range cRefs {
+	for _, cRef := range *call.Referrers() {
 		val, ok := r.getResVal(cRef)
 		if !ok {
 			continue
@@ -234,14 +230,11 @@ func (r *runner) getBodyOp(instr ssa.Instruction) (*ssa.UnOp, bool) {
 func (r *runner) isCloseCall(ccall ssa.Instruction) bool {
 	switch ccall := ccall.(type) {
 	case *ssa.Defer:
-		panic(ccall.Call.Value.Name())
 		if ccall.Call.Value != nil && ccall.Call.Value.Name() == errMethod {
 			return true
 		}
 	case *ssa.Call:
-		panic(ccall.Call.Value.Name())
 		if ccall.Call.Value != nil && ccall.Call.Value.Name() == errMethod {
-			r.pass.Reportf(ccall.Pos(), ccall.Call.Value.Name())
 			return true
 		}
 
