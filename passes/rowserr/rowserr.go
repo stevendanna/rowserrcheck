@@ -249,7 +249,6 @@ func (r *runner) isClosureCalled(c *ssa.MakeClosure) bool {
 }
 
 func (r *runner) noImportedDBSQL(f *ssa.Function) (ret bool) {
-	// return false
 	obj := f.Object()
 	if obj == nil {
 		return false
