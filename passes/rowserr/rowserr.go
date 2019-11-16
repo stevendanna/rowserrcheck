@@ -155,6 +155,19 @@ func (r *runner) notCheck(b *ssa.BasicBlock, i int) bool {
 						}
 					}
 				}
+			case *ssa.FieldAddr:
+				for _, bRef := range *resRef.Referrers() {
+					bOp, ok := r.getBodyOp(bRef)
+					if !ok {
+						continue
+					}
+
+					for _, ccall := range *bOp.Referrers() {
+						if r.isCloseCall(ccall) {
+							return false
+						}
+					}
+				}
 			}
 		}
 	}
@@ -193,6 +206,7 @@ func (r *runner) getResVal(instr ssa.Instruction) (ssa.Value, bool) {
 			return instr, true
 		}
 	}
+
 	return nil, false
 }
 
@@ -202,7 +216,6 @@ func (r *runner) getBodyOp(instr ssa.Instruction) (*ssa.UnOp, bool) {
 		return nil, false
 	}
 	// fix: try to check type
-
 	// if op.Type() != r.rowsObj.Type() {
 	// 	return nil, false
 	// }
