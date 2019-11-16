@@ -21,6 +21,14 @@ func RowsErrCheck() {
 	}()
 }
 
+func RowsErrNotCheck(db *sql.DB) {
+	rows, _ := db.Query("") // want "rows err must be checked"
+
+	defer func() {
+		_ = rows.Close()
+	}()
+}
+
 func f2() {
 	rows, err := db.Query("") // OK
 	if err != nil {
