@@ -62,7 +62,13 @@ func (r runner) run(pass *analysis.Pass, pkgPath string) (interface{}, error) {
 		return nil, nil
 	}
 
-	r.rowsObj = pkg.Type(rowsName).Object()
+	rowsType := pkg.Type(rowsName)
+	if rowsType == nil {
+		// skip checking
+		return nil, nil
+	}
+
+	r.rowsObj = rowsType.Object()
 	if r.rowsObj == nil {
 		// skip checking
 		return nil, nil
