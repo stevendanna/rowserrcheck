@@ -123,13 +123,13 @@ func (r *runner) notCheck(b *ssa.BasicBlock, i int) (ret bool) {
 		}
 
 		resRefs := *val.Referrers()
-		var notCallClose func(resRef ssa.Instruction) bool
-		notCallClose = func(resRef ssa.Instruction) bool {
+		var notCallErr func(resRef ssa.Instruction) bool
+		notCallErr = func(resRef ssa.Instruction) bool {
 			switch resRef := resRef.(type) {
 			case *ssa.Phi:
 				resRefs = append(resRefs, (*resRef.Referrers())...)
 				for _, rf := range *resRef.Referrers() {
-					if !notCallClose(rf) {
+					if !notCallErr(rf) {
 						return false
 					}
 				}
@@ -153,7 +153,7 @@ func (r *runner) notCheck(b *ssa.BasicBlock, i int) (ret bool) {
 
 				}
 			case *ssa.Call: // Indirect function call
-				if r.isCloseCall(resRef) {
+				if r.isErrCall(resRef) {
 					return false
 				}
 				if f, ok := resRef.Call.Value.(*ssa.Function); ok {
@@ -171,7 +171,7 @@ func (r *runner) notCheck(b *ssa.BasicBlock, i int) (ret bool) {
 					}
 
 					for _, ccall := range *bOp.Referrers() {
-						if r.isCloseCall(ccall) {
+						if r.isErrCall(ccall) {
 							return false
 						}
 					}
@@ -182,7 +182,7 @@ func (r *runner) notCheck(b *ssa.BasicBlock, i int) (ret bool) {
 		}
 
 		for _, resRef := range resRefs {
-			if !notCallClose(resRef) {
+			if !notCallErr(resRef) {
 				return false
 			}
 		}
@@ -238,7 +238,7 @@ func (r *runner) getBodyOp(instr ssa.Instruction) (*ssa.UnOp, bool) {
 	return op, true
 }
 
-func (r *runner) isCloseCall(ccall ssa.Instruction) bool {
+func (r *runner) isErrCall(ccall ssa.Instruction) bool {
 	switch ccall := ccall.(type) {
 	case *ssa.Defer:
 		if ccall.Call.Value != nil && ccall.Call.Value.Name() == errMethod {
