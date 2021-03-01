@@ -129,7 +129,6 @@ func (r *runner) errCallMissing(b *ssa.BasicBlock, i int) (ret bool) {
 		errCalled = func(resRef ssa.Instruction) bool {
 			switch resRef := resRef.(type) {
 			case *ssa.Phi:
-				resRefs = append(resRefs, *resRef.Referrers()...)
 				for _, rf := range *resRef.Referrers() {
 					if errCalled(rf) {
 						return true
