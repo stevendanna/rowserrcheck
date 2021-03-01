@@ -108,7 +108,7 @@ func (r runner) run(pass *analysis.Pass, pkgPath string) (interface{}, error) {
 }
 
 func (r *runner) notCheck(b *ssa.BasicBlock, i int) (ret bool) {
-	call, ok := r.getReqCall(b.Instrs[i])
+	call, ok := r.getCallReturnsRow(b.Instrs[i])
 	if !ok {
 		return false
 	}
@@ -190,7 +190,7 @@ func (r *runner) notCheck(b *ssa.BasicBlock, i int) (ret bool) {
 	return true
 }
 
-func (r *runner) getReqCall(instr ssa.Instruction) (*ssa.Call, bool) {
+func (r *runner) getCallReturnsRow(instr ssa.Instruction) (*ssa.Call, bool) {
 	call, ok := instr.(*ssa.Call)
 	if !ok {
 		return nil, false
