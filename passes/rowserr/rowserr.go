@@ -102,7 +102,7 @@ func (r runner) run(pass *analysis.Pass, pkgPath string) {
 
 		for _, b := range f.Blocks {
 			for i := range b.Instrs {
-				if r.notCheck(b, i) {
+				if r.errCallMissing(b, i) {
 					pass.Reportf(b.Instrs[i].Pos(), "rows.Err must be checked")
 				}
 			}
@@ -110,7 +110,7 @@ func (r runner) run(pass *analysis.Pass, pkgPath string) {
 	}
 }
 
-func (r *runner) notCheck(b *ssa.BasicBlock, i int) (ret bool) {
+func (r *runner) errCallMissing(b *ssa.BasicBlock, i int) (ret bool) {
 	call, ok := r.getCallReturnsRow(b.Instrs[i])
 	if !ok {
 		return false
@@ -161,7 +161,7 @@ func (r *runner) notCheck(b *ssa.BasicBlock, i int) (ret bool) {
 				if f, ok := resRef.Call.Value.(*ssa.Function); ok {
 					for _, b := range f.Blocks {
 						for i := range b.Instrs {
-							return r.notCheck(b, i)
+							return r.errCallMissing(b, i)
 						}
 					}
 				}
@@ -318,7 +318,7 @@ func (r *runner) calledInFunc(f *ssa.Function, called bool) bool {
 					}
 				}
 			default:
-				if r.notCheck(b, i) || !called {
+				if r.errCallMissing(b, i) || !called {
 					return true
 				}
 			}
