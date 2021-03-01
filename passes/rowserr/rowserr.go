@@ -323,13 +323,3 @@ func (r *runner) calledInFunc(f *ssa.Function, called bool) bool {
 	}
 	return true
 }
-
-// isNamedType reports whether t is the named type path.name.
-func isNamedType(t types.Type, path, name string) bool {
-	n, ok := t.(*types.Named)
-	if !ok {
-		return false
-	}
-	obj := n.Obj()
-	return obj.Name() == name && obj.Pkg() != nil && obj.Pkg().Path() == path
-}
