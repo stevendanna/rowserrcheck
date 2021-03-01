@@ -324,6 +324,5 @@ func (r *runner) calledInFunc(f *ssa.Function, called bool) bool {
 			}
 		}
 	}
-
 	return true
 }
