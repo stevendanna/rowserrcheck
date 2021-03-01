@@ -132,12 +132,9 @@ func (r *runner) errCallMissing(b *ssa.BasicBlock, i int) (ret bool) {
 					}
 				}
 			case *ssa.Store: // Call in Closure function
-				if len(*resRef.Addr.Referrers()) == 0 {
-					return false
-				}
-
 				for _, aref := range *resRef.Addr.Referrers() {
-					if c, ok := aref.(*ssa.MakeClosure); ok {
+					switch c := aref.(type) {
+					case *ssa.MakeClosure:
 						f := c.Fn.(*ssa.Function)
 						if r.noImportedDBSQL(f) {
 							// skip this
@@ -146,6 +143,12 @@ func (r *runner) errCallMissing(b *ssa.BasicBlock, i int) (ret bool) {
 						called := r.isClosureCalled(c)
 						if r.calledInFunc(f, called) {
 							return true
+						}
+					case *ssa.UnOp:
+						for _, rf := range *c.Referrers() {
+							if errCalled(rf) {
+								return true
+							}
 						}
 					}
 				}
