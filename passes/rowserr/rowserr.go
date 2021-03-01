@@ -119,24 +119,22 @@ func (r *runner) errCallMissing(b *ssa.BasicBlock, i int) (ret bool) {
 			continue
 		}
 		if len(*val.Referrers()) == 0 {
-			return true
+			continue
 		}
-
 		resRefs := *val.Referrers()
-		var notCallErr func(resRef ssa.Instruction) bool
-		notCallErr = func(resRef ssa.Instruction) bool {
+		var errCalled func(resRef ssa.Instruction) bool
+		errCalled = func(resRef ssa.Instruction) bool {
 			switch resRef := resRef.(type) {
 			case *ssa.Phi:
 				resRefs = append(resRefs, (*resRef.Referrers())...)
 				for _, rf := range *resRef.Referrers() {
-					if !notCallErr(rf) {
-						return false
+					if errCalled(rf) {
+						return true
 					}
 				}
-
 			case *ssa.Store: // Call in Closure function
 				if len(*resRef.Addr.Referrers()) == 0 {
-					return true
+					return false
 				}
 
 				for _, aref := range *resRef.Addr.Referrers() {
@@ -144,22 +142,24 @@ func (r *runner) errCallMissing(b *ssa.BasicBlock, i int) (ret bool) {
 						f := c.Fn.(*ssa.Function)
 						if r.noImportedDBSQL(f) {
 							// skip this
-							return false
+							continue
 						}
 						called := r.isClosureCalled(c)
-
-						return r.calledInFunc(f, called)
+						if r.calledInFunc(f, called) {
+							return true
+						}
 					}
-
 				}
 			case *ssa.Call: // Indirect function call
 				if r.isErrCall(resRef) {
-					return false
+					return true
 				}
 				if f, ok := resRef.Call.Value.(*ssa.Function); ok {
 					for _, b := range f.Blocks {
 						for i := range b.Instrs {
-							return r.errCallMissing(b, i)
+							if !r.errCallMissing(b, i) {
+								return true
+							}
 						}
 					}
 				}
@@ -172,17 +172,16 @@ func (r *runner) errCallMissing(b *ssa.BasicBlock, i int) (ret bool) {
 
 					for _, ccall := range *bOp.Referrers() {
 						if r.isErrCall(ccall) {
-							return false
+							return true
 						}
 					}
 				}
-
 			}
-			return true
+			return false
 		}
 
 		for _, resRef := range resRefs {
-			if !notCallErr(resRef) {
+			if errCalled(resRef) {
 				return false
 			}
 		}
@@ -308,7 +307,7 @@ func (r *runner) calledInFunc(f *ssa.Function, called bool) bool {
 						if vCall, ok := v.(*ssa.Call); ok {
 							if vCall.Call.Value != nil && vCall.Call.Value.Name() == errMethod {
 								if called {
-									return false
+									return true
 								}
 							}
 						}
@@ -316,10 +315,10 @@ func (r *runner) calledInFunc(f *ssa.Function, called bool) bool {
 				}
 			default:
 				if r.errCallMissing(b, i) || !called {
-					return true
+					return false
 				}
 			}
 		}
 	}
-	return true
+	return false
 }
