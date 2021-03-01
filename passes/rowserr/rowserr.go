@@ -114,7 +114,7 @@ func (r *runner) notCheck(b *ssa.BasicBlock, i int) (ret bool) {
 	}
 
 	for _, cRef := range *call.Referrers() {
-		val, ok := r.getResVal(cRef)
+		val, ok := r.getRowsVal(cRef)
 		if !ok {
 			continue
 		}
@@ -210,7 +210,7 @@ func (r *runner) getReqCall(instr ssa.Instruction) (*ssa.Call, bool) {
 	return call, true
 }
 
-func (r *runner) getResVal(instr ssa.Instruction) (ssa.Value, bool) {
+func (r *runner) getRowsVal(instr ssa.Instruction) (ssa.Value, bool) {
 	switch instr := instr.(type) {
 	case *ssa.Call:
 		if len(instr.Call.Args) == 1 && types.Identical(instr.Call.Args[0].Type(), r.rowsTyp) {
